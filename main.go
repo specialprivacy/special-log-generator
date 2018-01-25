@@ -115,11 +115,43 @@ func validateConfig(config config, defaultConfig config) config {
 }
 
 func main() {
+	cli.AppHelpTemplate = `NAME:
+	{{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
+
+USAGE:
+   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}} {{end}}{{if .Version}}{{if not .HideVersion}}
+
+VERSION:
+   {{.Version}}{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{.Description}}{{end}}{{if len .Authors}}
+
+AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
+   {{range $index, $author := .Authors}}{{if $index}}
+   {{end}}{{$author}}{{end}}{{end}}{{if .VisibleCommands}}
+
+GLOBAL OPTIONS:
+   {{range $index, $option := .VisibleFlags}}{{if $index}}
+   {{end}}{{$option}}{{end}}{{end}}{{if .Copyright}}
+
+COPYRIGHT:
+   {{.Copyright}}{{end}}
+`
+
 	app := cli.NewApp()
-	app.Name = "special-log-generator"
+	app.Name = "Special Log Generator"
+	app.HelpName = "slg"
 	app.Usage = "Create a stream of pseudo random log statements in the Special format"
 	app.EnableBashCompletion = true
 	app.Version = "0.1.0"
+	app.Authors = []cli.Author{
+		{
+			Name:  "Wouter Dullaert",
+			Email: "wouter.dullaert@tenforce.com",
+		},
+	}
+	app.Copyright = "(c) 2018 Tenforce"
 
 	defaultConfig := config{
 		Process:    []string{"mailinglist", "send-invoice"},
