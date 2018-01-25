@@ -2,10 +2,10 @@
 
 
 [[projects]]
-  name = "github.com/confluentinc/confluent-kafka-go"
-  packages = ["kafka"]
-  revision = "f696f02dcbb04d95b103c5b848bb15f749a996f7"
-  version = "v0.11.0"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
 
 [[projects]]
   name = "github.com/urfave/cli"
@@ -16,6 +16,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "708048144a346fe9fa7ba789c845d713e532047a24a865bd24e9a79467cc94b0"
+  inputs-digest = "8ca4ec89b85e0e120f3b3c958be8c7cf206a854fdffd4252e48fd92c6abcbfa4"
   solver-name = "gps-cdcl"
   solver-version = 1

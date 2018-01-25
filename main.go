@@ -19,9 +19,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/urfave/cli"
 )
 
@@ -34,30 +36,56 @@ type log struct {
 	Attributes []string `json:"attributes"`
 }
 
-func generateLog(n int, rate time.Duration, c chan log) {
+type config struct {
+	Process    []string
+	Purpose    []string
+	Location   []string
+	UserId     []string
+	Attributes []string
+}
+
+func makeUUIDList(length int) []string {
+	output := make([]string, length)
+	for i := 0; i < length; i++ {
+		output[i] = uuid.New().String()
+	}
+	return output
+}
+
+func getRandomValue(values []string) string {
+	return values[rand.Intn(len(values))]
+}
+
+func getRandomList(values []string) []string {
+	length := rand.Intn(len(values))
+	for i := len(values) - 1; i > 0; i-- {
+		j := rand.Intn(i + 1)
+		values[i], values[j] = values[j], values[i]
+	}
+	return values[0:length]
+}
+
+func makeLog(config config) log {
+	return log{
+		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
+		Process:    getRandomValue(config.Process),
+		Purpose:    getRandomValue(config.Purpose),
+		Location:   getRandomValue(config.Location),
+		UserId:     getRandomValue(config.UserId),
+		Attributes: getRandomList(config.Attributes),
+	}
+}
+
+func generateLog(config config, n int, rate time.Duration, c chan log) {
 	if n <= 0 {
 		for {
-			payload := log{
-				Timestamp:  1516714505234,
-				Process:    "test-process",
-				Purpose:    "marketing",
-				Location:   "belgium",
-				UserId:     "150e2356-eaf0-4ea3-b5e0-188fb5548ccb",
-				Attributes: []string{"email", "age"},
-			}
+			payload := makeLog(config)
 			c <- payload
 			time.Sleep(rate)
 		}
 	} else {
 		for i := 0; i < n; i++ {
-			payload := log{
-				Timestamp:  1516714505234,
-				Process:    "test-process",
-				Purpose:    "marketing",
-				Location:   "belgium",
-				UserId:     "150e2356-eaf0-4ea3-b5e0-188fb5548ccb",
-				Attributes: []string{"email", "age"},
-			}
+			payload := makeLog(config)
 			c <- payload
 			time.Sleep(rate)
 		}
@@ -74,6 +102,13 @@ func main() {
 
 	var rateFlag string
 	var numFlag int
+	config := config{
+		Process:    []string{"mailinglist", "send-invoice"},
+		Purpose:    []string{"marketing", "billing"},
+		Location:   []string{"belgium", "germany", "austria", "france"},
+		UserId:     makeUUIDList(5),
+		Attributes: []string{"name", "age", "email", "address", "hartrate"},
+	}
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "rate",
@@ -95,7 +130,7 @@ func main() {
 		if err != nil {
 			return cli.NewExitError(err.Error(), 1)
 		}
-		go generateLog(numFlag, rate, ch)
+		go generateLog(config, numFlag, rate, ch)
 
 		for log := range ch {
 			b, err := json.Marshal(log)
