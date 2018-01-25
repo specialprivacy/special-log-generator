@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"time"
@@ -37,11 +38,11 @@ type log struct {
 }
 
 type config struct {
-	Process    []string
-	Purpose    []string
-	Location   []string
-	UserId     []string
-	Attributes []string
+	Process    []string `json:process`
+	Purpose    []string `json:purpose`
+	Location   []string `json:location`
+	UserId     []string `json:userId`
+	Attributes []string `json:attributes`
 }
 
 func makeUUIDList(length int) []string {
@@ -93,6 +94,25 @@ func generateLog(config config, n int, rate time.Duration, c chan log) {
 	}
 }
 
+func validateConfig(config config, defaultConfig config) config {
+	if config.Process == nil {
+		config.Process = defaultConfig.Process
+	}
+	if config.Purpose == nil {
+		config.Purpose = defaultConfig.Purpose
+	}
+	if config.Location == nil {
+		config.Location = defaultConfig.Location
+	}
+	if config.UserId == nil {
+		config.UserId = defaultConfig.UserId
+	}
+	if config.Attributes == nil {
+		config.Attributes = defaultConfig.Attributes
+	}
+	return config
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "special-log-generator"
@@ -100,36 +120,59 @@ func main() {
 	app.EnableBashCompletion = true
 	app.Version = "0.1.0"
 
-	var rateFlag string
-	var numFlag int
-	config := config{
+	defaultConfig := config{
 		Process:    []string{"mailinglist", "send-invoice"},
 		Purpose:    []string{"marketing", "billing"},
 		Location:   []string{"belgium", "germany", "austria", "france"},
 		UserId:     makeUUIDList(5),
 		Attributes: []string{"name", "age", "email", "address", "hartrate"},
 	}
+
+	var rateFlag string
+	var numFlag int
+	var configFlag string
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "rate",
 			Value:       "0s",
-			Usage:       "The rate at which the generator outputs log statements. Understands golang time syntax eg: 1s",
+			Usage:       "The `rate` at which the generator outputs log statements. Understands golang time syntax eg: 1s",
 			Destination: &rateFlag,
 		},
 		cli.IntFlag{
 			Name:        "num",
 			Value:       10,
-			Usage:       "The number of log statements to create. Numbers <= 0 will create an infinite stream",
+			Usage:       "The `number` of log statements to create. Numbers <= 0 will create an infinite stream",
 			Destination: &numFlag,
+		},
+		cli.StringFlag{
+			Name:        "config, c",
+			Usage:       "Path to config `file` containing alternative values for the logs",
+			Destination: &configFlag,
 		},
 	}
 
 	app.Action = func(c *cli.Context) error {
-		ch := make(chan log)
 		rate, err := time.ParseDuration(rateFlag)
 		if err != nil {
 			return cli.NewExitError(err.Error(), 1)
 		}
+
+		var config config
+		if configFlag == "" {
+			config = defaultConfig
+		} else {
+			rawConfig, err := ioutil.ReadFile(configFlag)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			err = json.Unmarshal(rawConfig, &config)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			config = validateConfig(config, defaultConfig)
+		}
+
+		ch := make(chan log)
 		go generateLog(config, numFlag, rate, ch)
 
 		for log := range ch {
