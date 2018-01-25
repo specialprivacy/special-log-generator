@@ -19,9 +19,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/urfave/cli"
 	"os"
 	"time"
+
+	"github.com/urfave/cli"
 )
 
 type log struct {
@@ -34,19 +35,34 @@ type log struct {
 }
 
 func generateLog(n int, rate time.Duration, c chan log) {
-	for i := 0; i < n; i++ {
-		payload := log{
-			Timestamp:  1516714505234,
-			Process:    "test-process",
-			Purpose:    "marketing",
-			Location:   "belgium",
-			UserId:     "150e2356-eaf0-4ea3-b5e0-188fb5548ccb",
-			Attributes: []string{"email", "age"},
+	if n <= 0 {
+		for {
+			payload := log{
+				Timestamp:  1516714505234,
+				Process:    "test-process",
+				Purpose:    "marketing",
+				Location:   "belgium",
+				UserId:     "150e2356-eaf0-4ea3-b5e0-188fb5548ccb",
+				Attributes: []string{"email", "age"},
+			}
+			c <- payload
+			time.Sleep(rate)
 		}
-		c <- payload
-		time.Sleep(rate)
+	} else {
+		for i := 0; i < n; i++ {
+			payload := log{
+				Timestamp:  1516714505234,
+				Process:    "test-process",
+				Purpose:    "marketing",
+				Location:   "belgium",
+				UserId:     "150e2356-eaf0-4ea3-b5e0-188fb5548ccb",
+				Attributes: []string{"email", "age"},
+			}
+			c <- payload
+			time.Sleep(rate)
+		}
+		close(c)
 	}
-	close(c)
 }
 
 func main() {
@@ -56,13 +72,30 @@ func main() {
 	app.EnableBashCompletion = true
 	app.Version = "0.1.0"
 
+	var rateFlag string
+	var numFlag int
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:        "rate",
+			Value:       "0s",
+			Usage:       "The rate at which the generator outputs log statements. Understands golang time syntax eg: 1s",
+			Destination: &rateFlag,
+		},
+		cli.IntFlag{
+			Name:        "num",
+			Value:       10,
+			Usage:       "The number of log statements to create. Numbers <= 0 will create an infinite stream",
+			Destination: &numFlag,
+		},
+	}
+
 	app.Action = func(c *cli.Context) error {
 		ch := make(chan log)
-		rate, err := time.ParseDuration("2s")
+		rate, err := time.ParseDuration(rateFlag)
 		if err != nil {
 			return cli.NewExitError(err.Error(), 1)
 		}
-		go generateLog(10, rate, ch)
+		go generateLog(numFlag, rate, ch)
 
 		for log := range ch {
 			b, err := json.Marshal(log)
