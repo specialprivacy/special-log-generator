@@ -1,0 +1,80 @@
+image: golang:1.9-alpine
+
+stages:
+  - build
+  # TODO: add tests and a test stage
+  - release
+
+build:
+  stage: build
+  script:
+    - cp -r `pwd` $GOPATH/src/special-log-generator
+    - cd $GOPATH/src/special-log-generator
+    - go build
+  except:
+    - tags
+
+.release-template: &release-template
+  stage: release
+  variables:
+    EXTENSION: ""
+  artifacts:
+    paths:
+      - slg${EXTENSION}
+    name: "slg-${CI_COMMIT_REF_NAME}-${GOOS}-${GOARCH}"
+  script:
+    - cp -r `pwd` $GOPATH/src/special-log-generator
+    - cd $GOPATH/src/special-log-generator
+    - go build
+    - mv special-log-generator${EXTENSION} slg${EXTENSION}
+  only:
+    - tags
+
+release-linux-amd64:
+  <<: *release-template
+  variables:
+    GOOS: linux
+    GOARCH: amd64
+    EXTENSION: ""
+release-linux-x86:
+  <<: *release-template
+  variables:
+    GOOS: linux
+    GOARCH: "386"
+    EXTENSION: ""
+release-linux-arm:
+  <<: *release-template
+  variables:
+    GOOS: linux
+    GOARCH: arm
+    EXTENSION: ""
+release-linux-arm64:
+  <<: *release-template
+  variables:
+    GOOS: linux
+    GOARCH: arm64
+    EXTENSION: ""
+release-mac-amd64:
+  <<: *release-template
+  variables:
+    GOOS: darwin
+    GOARCH: amd64
+    EXTENSION: ""
+release-mac-x86:
+  <<: *release-template
+  variables:
+    GOOS: darwin
+    GOARCH: "386"
+    EXTENSION: ""
+release-windows-amd64:
+  <<: *release-template
+  variables:
+    GOOS: windows
+    GOARCH: amd64
+    EXTENSION: .exe
+release-windows-x86:
+  <<: *release-template
+  variables:
+    GOOS: windows
+    GOARCH: "386"
+    EXTENSION: .exe
