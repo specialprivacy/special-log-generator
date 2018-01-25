@@ -144,7 +144,7 @@ COPYRIGHT:
 	app.HelpName = "slg"
 	app.Usage = "Create a stream of pseudo random log statements in the Special format"
 	app.EnableBashCompletion = true
-	app.Version = "0.1.0"
+	app.Version = "1.0.0"
 	app.Authors = []cli.Author{
 		{
 			Name:  "Wouter Dullaert",
