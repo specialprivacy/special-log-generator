@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -131,6 +132,7 @@ func main() {
 	var rateFlag string
 	var numFlag int
 	var configFlag string
+	var outputFlag string
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "rate",
@@ -148,6 +150,11 @@ func main() {
 			Name:        "config, c",
 			Usage:       "Path to config `file` containing alternative values for the logs",
 			Destination: &configFlag,
+		},
+		cli.StringFlag{
+			Name:        "output, o",
+			Usage:       "The `file` to which the generated log statements should be written (default: stdout)",
+			Destination: &outputFlag,
 		},
 	}
 
@@ -172,6 +179,18 @@ func main() {
 			config = validateConfig(config, defaultConfig)
 		}
 
+		var output io.Writer
+		if outputFlag == "" {
+			output = os.Stdout
+		} else {
+			file, err := os.Create(outputFlag)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			output = file
+			defer file.Close()
+		}
+
 		ch := make(chan log)
 		go generateLog(config, numFlag, rate, ch)
 
@@ -180,7 +199,7 @@ func main() {
 			if err != nil {
 				return cli.NewExitError(err.Error(), 1)
 			}
-			fmt.Printf("%s\n", b)
+			fmt.Fprintf(output, "%s\n", b)
 		}
 
 		return nil
