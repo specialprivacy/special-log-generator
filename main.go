@@ -180,15 +180,15 @@ COPYRIGHT:
 
 	ttlTemplate = getTtlTemplate()
 
-	var rateFlag string
+	var rateFlag time.Duration
 	var numFlag int
 	var configFlag string
 	var outputFlag string
 	var formatFlag string
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
+		cli.DurationFlag{
 			Name:        "rate",
-			Value:       "0s",
+			Value:       time.Duration(0),
 			Usage:       "The `rate` at which the generator outputs log statements. Understands golang time syntax eg: 1s",
 			Destination: &rateFlag,
 		},
@@ -217,11 +217,6 @@ COPYRIGHT:
 	}
 
 	app.Action = func(c *cli.Context) error {
-		rate, err := time.ParseDuration(rateFlag)
-		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
-		}
-
 		var config config
 		if configFlag == "" {
 			config = defaultConfig
@@ -259,7 +254,7 @@ COPYRIGHT:
 		}
 
 		ch := make(chan log)
-		go generateLog(config, numFlag, rate, ch)
+		go generateLog(config, numFlag, rateFlag, ch)
 
 		for log := range ch {
 			b, err := serializer(log)
