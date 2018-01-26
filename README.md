@@ -44,12 +44,30 @@ Example of a fully specified config file:
 }
 ```
 
+### Examples
+- Print 10 random logs to `stdout`
+```bash
+slg
+```
+- Print 100 random logs to `logs.json`
+```bash
+slg --num 100 --output logs.json
+```
+- Print 10 logs at a rate of 1 every second to `stdout`
+```bash
+slg --rate 1s
+```
+- Pipe an infinite stream of logs every 10ms to apache kafka
+```bash
+slg --rate 10ms --num -1 | kafka-cli-producer --broker-list http://kafka:9300 --zookeeper http://zookeeper:2181 --topic special-logs
+```
+
 ## Build
 Dependencies are vendored into the codebase, and managed through dep (https://golang.github.io/dep/)
 This makes building as simple as
 
 ```bash
-git clone https://git.ai.wu.ac.at/specialprivacy/special-log-generator.git # Ensure this is somewhere on the gopath
+git clone https://git.ai.wu.ac.at/specialprivacy/special-log-generator.git # Ensure this is somewhere on the $GOPATH
 go build
 ```
 
