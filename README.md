@@ -11,10 +11,13 @@ The binaries are standalone and do not have any further dependencies
 
 ### Basic usage
 ```bash
-slg [global options]
+slg [global options] command [command options]
 ```
 
-### Options
+The application has the following commands:
+- **generate** Generate logs messages in the special format
+
+### Generate Options
 - `--rate`: The rate at which the generator outputs log statements. This parameter understands golang time syntax eg: `1s` or `10ms` (default: `0s`)
 - `--num`: The total number of statements that will be generated. When this parameters is <=0 it will create an infinite stream (default: `10`)
 - `--config`: The path to a config file in json containing alternative values for the logs
@@ -47,19 +50,19 @@ Example of a fully specified config file:
 ### Examples
 - Print 10 random logs to `stdout`
 ```bash
-slg
+slg generate
 ```
 - Print 100 random logs to `logs.json`
 ```bash
-slg --num 100 --output logs.json
+slg generate --num 100 --output logs.json
 ```
 - Print 10 logs at a rate of 1 every second to `stdout`
 ```bash
-slg --rate 1s
+slg generate --rate 1s
 ```
 - Pipe an infinite stream of logs every 10ms to apache kafka
 ```bash
-slg --rate 10ms --num -1 | kafka-cli-producer --broker-list http://kafka:9300 --zookeeper http://zookeeper:2181 --topic special-logs
+slg generate --rate 10ms --num -1 | kafka-cli-producer --broker-list http://kafka:9300 --zookeeper http://zookeeper:2181 --topic special-logs
 ```
 
 ## Build
@@ -83,7 +86,7 @@ go build
 ```
 
 ## TODO
-* Support additional serialization formats besides json
+* Provide an option to generate configuration files with certain properties
 
 ## LICENSE
 Apache-2.0 © Tenforce
