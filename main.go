@@ -17,12 +17,14 @@ package main
  */
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"text/template"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,9 +51,13 @@ type config struct {
 func makeUUIDList(length int) []string {
 	output := make([]string, length)
 	for i := 0; i < length; i++ {
-		output[i] = uuid.New().String()
+		output[i] = randomUUID()
 	}
 	return output
+}
+
+func randomUUID() string {
+	return uuid.New().String()
 }
 
 func getRandomValue(values []string) string {
@@ -114,6 +120,17 @@ func validateConfig(config config, defaultConfig config) config {
 	return config
 }
 
+var ttlTemplate *template.Template
+
+func ttlMarshal(v interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	err := ttlTemplate.Execute(&buf, v)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
 func main() {
 	cli.AppHelpTemplate = `NAME:
 	{{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
@@ -161,10 +178,13 @@ COPYRIGHT:
 		Attributes: []string{"name", "age", "email", "address", "hartrate"},
 	}
 
+	ttlTemplate = getTtlTemplate()
+
 	var rateFlag string
 	var numFlag int
 	var configFlag string
 	var outputFlag string
+	var formatFlag string
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "rate",
@@ -187,6 +207,12 @@ COPYRIGHT:
 			Name:        "output, o",
 			Usage:       "The `file` to which the generated log statements should be written (default: stdout)",
 			Destination: &outputFlag,
+		},
+		cli.StringFlag{
+			Name:        "format, f",
+			Value:       "json",
+			Usage:       "The serialization `format` used to write the logs (json or ttl)",
+			Destination: &formatFlag,
 		},
 	}
 
@@ -223,11 +249,20 @@ COPYRIGHT:
 			defer file.Close()
 		}
 
+		var serializer func(interface{}) ([]byte, error)
+		if formatFlag == "json" {
+			serializer = json.Marshal
+		} else if formatFlag == "ttl" {
+			serializer = ttlMarshal
+		} else {
+			return cli.NewExitError(fmt.Sprintf("format should be oneOf ['json', 'ttl']. Recieved %s", formatFlag), 1)
+		}
+
 		ch := make(chan log)
 		go generateLog(config, numFlag, rate, ch)
 
 		for log := range ch {
-			b, err := json.Marshal(log)
+			b, err := serializer(log)
 			if err != nil {
 				return cli.NewExitError(err.Error(), 1)
 			}
