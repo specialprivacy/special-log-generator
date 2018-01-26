@@ -180,43 +180,37 @@ COPYRIGHT:
 
 	ttlTemplate = getTtlTemplate()
 
-	var rateFlag time.Duration
-	var numFlag int
-	var configFlag string
-	var outputFlag string
-	var formatFlag string
 	app.Flags = []cli.Flag{
 		cli.DurationFlag{
-			Name:        "rate",
-			Value:       time.Duration(0),
-			Usage:       "The `rate` at which the generator outputs log statements. Understands golang time syntax eg: 1s",
-			Destination: &rateFlag,
+			Name:  "rate",
+			Value: time.Duration(0),
+			Usage: "The `rate` at which the generator outputs log statements. Understands golang time syntax eg: 1s",
 		},
 		cli.IntFlag{
-			Name:        "num",
-			Value:       10,
-			Usage:       "The `number` of log statements to create. Numbers <= 0 will create an infinite stream",
-			Destination: &numFlag,
+			Name:  "num",
+			Value: 10,
+			Usage: "The `number` of log statements to create. Numbers <= 0 will create an infinite stream",
 		},
 		cli.StringFlag{
-			Name:        "config, c",
-			Usage:       "Path to config `file` containing alternative values for the logs",
-			Destination: &configFlag,
+			Name:  "config, c",
+			Usage: "Path to config `file` containing alternative values for the logs",
 		},
 		cli.StringFlag{
-			Name:        "output, o",
-			Usage:       "The `file` to which the generated log statements should be written (default: stdout)",
-			Destination: &outputFlag,
+			Name:  "output, o",
+			Usage: "The `file` to which the generated log statements should be written (default: stdout)",
 		},
 		cli.StringFlag{
-			Name:        "format, f",
-			Value:       "json",
-			Usage:       "The serialization `format` used to write the logs (json or ttl)",
-			Destination: &formatFlag,
+			Name:  "format, f",
+			Value: "json",
+			Usage: "The serialization `format` used to write the logs (json or ttl)",
 		},
 	}
 
 	app.Action = func(c *cli.Context) error {
+		rate := c.Duration("rate")
+		num := c.Int("num")
+
+		configFlag := c.String("config")
 		var config config
 		if configFlag == "" {
 			config = defaultConfig
@@ -232,6 +226,7 @@ COPYRIGHT:
 			config = validateConfig(config, defaultConfig)
 		}
 
+		outputFlag := c.String("output")
 		var output io.Writer
 		if outputFlag == "" {
 			output = os.Stdout
@@ -244,17 +239,18 @@ COPYRIGHT:
 			defer file.Close()
 		}
 
+		format := c.String("format")
 		var serializer func(interface{}) ([]byte, error)
-		if formatFlag == "json" {
+		if format == "json" {
 			serializer = json.Marshal
-		} else if formatFlag == "ttl" {
+		} else if format == "ttl" {
 			serializer = ttlMarshal
 		} else {
-			return cli.NewExitError(fmt.Sprintf("format should be oneOf ['json', 'ttl']. Recieved %s", formatFlag), 1)
+			return cli.NewExitError(fmt.Sprintf("format should be oneOf ['json', 'ttl']. Recieved %s", format), 1)
 		}
 
 		ch := make(chan log)
-		go generateLog(config, numFlag, rateFlag, ch)
+		go generateLog(config, num, rate, ch)
 
 		for log := range ch {
 			b, err := serializer(log)
