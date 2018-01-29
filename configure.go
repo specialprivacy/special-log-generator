@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
 	"reflect"
 	"strings"
 
@@ -67,14 +65,6 @@ func generateValues(num int, prefix string) []string {
 	return output
 }
 
-// generateUserIds creates a list of userIds. Unless a prefix is given it will generate UUIDs.
-func generateUserIds(num int, prefix string) []string {
-	if prefix != "UserId" {
-		return generateValues(num, prefix)
-	}
-	return makeUUIDList(num)
-}
-
 var configureCommand = cli.Command{
 	Name:      "configure",
 	Aliases:   []string{"c"},
@@ -83,26 +73,19 @@ var configureCommand = cli.Command{
 	Flags:     createCommandFlags(configAttributes),
 	Action: func(c *cli.Context) error {
 		// Parse the output flag
-		outputFlag := c.String("output")
-		var output io.Writer
-		if outputFlag == "" {
-			output = os.Stdout
-		} else {
-			file, err := os.Create(outputFlag)
-			if err != nil {
-				return cli.NewExitError(err.Error(), 1)
-			}
-			output = file
-			defer file.Close()
+		output, err := getOutput(c.String("output"))
+		if err != nil {
+			return cli.NewExitError(err.Error(), 1)
 		}
+		defer output.Close()
 
 		// Generate values for all fields of the config struct
 		// Since the default number of values to be created is 0, we can just
 		// naively iterate over all of them
-		result := config{}
+		result := &config{}
 		resultValue := reflect.ValueOf(result)
 		for _, attr := range configAttributes {
-			resultValue.FieldByName(attr).Set(reflect.ValueOf(generateValues(
+			resultValue.Elem().FieldByName(attr).Set(reflect.ValueOf(generateValues(
 				c.Int(getNumFlag(attr)),
 				c.String(getPrefixFlag(attr)),
 			)))

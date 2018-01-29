@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"os"
 	"time"
 
 	"github.com/urfave/cli"
@@ -110,19 +108,12 @@ var generateCommand = cli.Command{
 			}
 		}
 
-		// Parse out the output flag
-		outputFlag := c.String("output")
-		var output io.Writer
-		if outputFlag == "" {
-			output = os.Stdout
-		} else {
-			file, err := os.Create(outputFlag)
-			if err != nil {
-				return cli.NewExitError(err.Error(), 1)
-			}
-			output = file
-			defer file.Close()
+		// Parse the output flag
+		output, err := getOutput(c.String("output"))
+		if err != nil {
+			return cli.NewExitError(err.Error(), 1)
 		}
+		defer output.Close()
 
 		// Parse out the format flag (json or ttl)
 		format := c.String("format")

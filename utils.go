@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"os"
 
 	"github.com/google/uuid"
 )
@@ -33,4 +34,17 @@ func getRandomList(values []string) []string {
 		values[i], values[j] = values[j], values[i]
 	}
 	return values[0:length]
+}
+
+// getOutput will open a writable file or return stdout if file is empty.
+func getOutput(file string) (*os.File, error) {
+	if file == "" {
+		return os.Stdout, nil
+	} else {
+		output, err := os.Create(file)
+		if err != nil {
+			return nil, err
+		}
+		return output, nil
+	}
 }
