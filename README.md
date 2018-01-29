@@ -47,6 +47,19 @@ Example of a fully specified config file:
 }
 ```
 
+### Configure Options
+- `--output`: The file to which the generated log statements should be written (default: stdout)
+- `--processNum`: The number of Process attribute values to generate (default: 0)
+- `--processPrefix`: The prefix string to be used for the generated Process attributes (default: "Process")
+- `--purposeNum`: The number of Purpose attribute values to generate (default: 0)
+- `--purposePrefix`: The prefix string to be used for the generated Purpose attributes (default: "Purpose")
+- `--locationNum`: The number of Location attribute values to generate (default: 0)
+- `--locationPrefix`: The prefix string to be used for the generated Location attributes (default: "Location")
+- `--userIdNum`: The number of UserId attribute values to generate (default: 0)
+- `--userIdPrefix`: The prefix string to be used for the generated UserId attributes (default: "UserId")
+- `--attributesNum`: The number of Attributes attribute values to generate (default: 0)
+- `--attributesPrefix`: The prefix string to be used for the generated Attributes attributes (default: "Attributes")
+
 ### Examples
 - Print 10 random logs to `stdout`
 ```bash

@@ -67,33 +67,6 @@ func generateLog(config config, n int, rate time.Duration, c chan log) {
 	}
 }
 
-func validateConfig(config config, defaultConfig config) config {
-	if config.Process == nil {
-		config.Process = defaultConfig.Process
-	}
-	if config.Purpose == nil {
-		config.Purpose = defaultConfig.Purpose
-	}
-	if config.Location == nil {
-		config.Location = defaultConfig.Location
-	}
-	if config.UserId == nil {
-		config.UserId = defaultConfig.UserId
-	}
-	if config.Attributes == nil {
-		config.Attributes = defaultConfig.Attributes
-	}
-	return config
-}
-
-var defaultConfig = config{
-	Process:    []string{"mailinglist", "send-invoice"},
-	Purpose:    []string{"marketing", "billing"},
-	Location:   []string{"belgium", "germany", "austria", "france"},
-	UserId:     makeUUIDList(5),
-	Attributes: []string{"name", "age", "email", "address", "hartrate"},
-}
-
 var ttlTemplate = getTtlTemplate()
 
 func ttlMarshal(v interface{}) ([]byte, error) {
@@ -140,10 +113,9 @@ var generateCommand = cli.Command{
 		num := c.Int("num")
 
 		configFlag := c.String("config")
-		var config config
-		if configFlag == "" {
-			config = defaultConfig
-		} else {
+		// This only makes a shallow copy, but the defaultConfig is never reused anyway, so it's not causing any issues for now
+		config := defaultConfig
+		if configFlag != "" {
 			rawConfig, err := ioutil.ReadFile(configFlag)
 			if err != nil {
 				return cli.NewExitError(err.Error(), 1)
@@ -152,7 +124,6 @@ var generateCommand = cli.Command{
 			if err != nil {
 				return cli.NewExitError(err.Error(), 1)
 			}
-			config = validateConfig(config, defaultConfig)
 		}
 
 		outputFlag := c.String("output")
@@ -186,7 +157,10 @@ var generateCommand = cli.Command{
 			if err != nil {
 				return cli.NewExitError(err.Error(), 1)
 			}
-			fmt.Fprintf(output, "%s\n", b)
+			_, err = fmt.Fprintf(output, "%s\n", b)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
 		}
 
 		return nil

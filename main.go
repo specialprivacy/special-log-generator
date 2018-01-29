@@ -32,11 +32,19 @@ type log struct {
 }
 
 type config struct {
-	Process    []string `json:process`
-	Purpose    []string `json:purpose`
-	Location   []string `json:location`
-	UserId     []string `json:userId`
-	Attributes []string `json:attributes`
+	Process    []string `json:"process,omitempty"`
+	Purpose    []string `json:"purpose,omitempty"`
+	Location   []string `json:"location,omitempty"`
+	UserId     []string `json:"userId,omitempty"`
+	Attributes []string `json:"attributes,omitempty"`
+}
+
+var defaultConfig = config{
+	Process:    []string{"mailinglist", "send-invoice"},
+	Purpose:    []string{"marketing", "billing"},
+	Location:   []string{"belgium", "germany", "austria", "france"},
+	UserId:     makeUUIDList(5),
+	Attributes: []string{"name", "age", "email", "address", "hartrate"},
 }
 
 func main() {
@@ -57,6 +65,7 @@ func main() {
 
 	app.Commands = []cli.Command{
 		generateCommand,
+		configureCommand,
 	}
 
 	app.Action = func(c *cli.Context) error {
