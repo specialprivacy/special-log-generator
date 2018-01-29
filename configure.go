@@ -11,6 +11,7 @@ import (
 	"github.com/urfave/cli"
 )
 
+// Create an array of the names of all config struct keys
 var configAttributes = func() []string {
 	configType := reflect.TypeOf(config{})
 	numAttributes := configType.NumField()
@@ -21,16 +22,20 @@ var configAttributes = func() []string {
 	return attributes
 }()
 
+// getNumFlag creates the name of the flag for the number input for a config property v.
 func getNumFlag(v string) string {
 	camelV := strings.Replace(v, v[:1], strings.ToLower(v[:1]), 1)
 	return fmt.Sprintf("%sNum", camelV)
 }
 
+// getPrefixFlag creates the name of the flag for the prefix input for a config property v.
 func getPrefixFlag(v string) string {
 	camelV := strings.Replace(v, v[:1], strings.ToLower(v[:1]), 1)
 	return fmt.Sprintf("%sPrefix", camelV)
 }
 
+// createCommandFlags returns a list of cli.Flag configurations.
+// It will append a few hardcoded flags to a list of flags for each config property.
 func createCommandFlags(attributes []string) []cli.Flag {
 	numRegularFlags := 1
 	output := make([]cli.Flag, len(attributes)*2+numRegularFlags)
@@ -53,6 +58,7 @@ func createCommandFlags(attributes []string) []cli.Flag {
 	return output
 }
 
+// generateValues creates a list of length n with values based on a particular prefix.
 func generateValues(num int, prefix string) []string {
 	output := make([]string, num)
 	for i := 0; i < num; i++ {
@@ -61,6 +67,7 @@ func generateValues(num int, prefix string) []string {
 	return output
 }
 
+// generateUserIds creates a list of userIds. Unless a prefix is given it will generate UUIDs.
 func generateUserIds(num int, prefix string) []string {
 	if prefix != "UserId" {
 		return generateValues(num, prefix)
@@ -75,6 +82,7 @@ var configureCommand = cli.Command{
 	ArgsUsage: " ",
 	Flags:     createCommandFlags(configAttributes),
 	Action: func(c *cli.Context) error {
+		// Parse the output flag
 		outputFlag := c.String("output")
 		var output io.Writer
 		if outputFlag == "" {
@@ -88,6 +96,9 @@ var configureCommand = cli.Command{
 			defer file.Close()
 		}
 
+		// Generate values for all fields of the config struct
+		// Since the default number of values to be created is 0, we can just
+		// naively iterate over all of them
 		result := config{}
 		resultValue := reflect.ValueOf(result)
 		for _, attr := range configAttributes {
@@ -97,6 +108,7 @@ var configureCommand = cli.Command{
 			)))
 		}
 
+		// Marshal the result into json and write to the specified output
 		b, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
 			return cli.NewExitError(err.Error(), 1)

@@ -6,39 +6,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/urfave/cli"
 )
 
-func makeUUIDList(length int) []string {
-	output := make([]string, length)
-	for i := 0; i < length; i++ {
-		output[i] = randomUUID()
-	}
-	return output
-}
-
-func randomUUID() string {
-	return uuid.New().String()
-}
-
-func getRandomValue(values []string) string {
-	return values[rand.Intn(len(values))]
-}
-
-func getRandomList(values []string) []string {
-	length := rand.Intn(len(values))
-	for i := len(values) - 1; i > 0; i-- {
-		j := rand.Intn(i + 1)
-		values[i], values[j] = values[j], values[i]
-	}
-	return values[0:length]
-}
-
+// makeLog creates a log statement from a random selection of the values in config.
 func makeLog(config config) log {
 	return log{
 		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
@@ -50,6 +24,9 @@ func makeLog(config config) log {
 	}
 }
 
+// generateLog sends a maximum of n random log messages through channel c at the a particular rate.
+// The function is meant to run a a go-routine
+// In case n <= 0 the function will keep the channel running indefinitely
 func generateLog(config config, n int, rate time.Duration, c chan log) {
 	if n <= 0 {
 		for {
@@ -69,6 +46,12 @@ func generateLog(config config, n int, rate time.Duration, c chan log) {
 
 var ttlTemplate = getTtlTemplate()
 
+// ttlMarshal renders a value in tuttle syntax according to the ttlTemplate.
+// It is meant to be API compatible with json.Marshal.
+//
+// In the future we should replace this with a generic RDF library that renders
+// a struct based on meta data defined by field tags (comparable to how json
+// and xml work right now)
 func ttlMarshal(v interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	err := ttlTemplate.Execute(&buf, v)
@@ -112,6 +95,7 @@ var generateCommand = cli.Command{
 		rate := c.Duration("rate")
 		num := c.Int("num")
 
+		// Parse out the configuration should there be any
 		configFlag := c.String("config")
 		// This only makes a shallow copy, but the defaultConfig is never reused anyway, so it's not causing any issues for now
 		config := defaultConfig
@@ -126,6 +110,7 @@ var generateCommand = cli.Command{
 			}
 		}
 
+		// Parse out the output flag
 		outputFlag := c.String("output")
 		var output io.Writer
 		if outputFlag == "" {
@@ -139,6 +124,7 @@ var generateCommand = cli.Command{
 			defer file.Close()
 		}
 
+		// Parse out the format flag (json or ttl)
 		format := c.String("format")
 		var serializer func(interface{}) ([]byte, error)
 		if format == "json" {
@@ -149,9 +135,11 @@ var generateCommand = cli.Command{
 			return cli.NewExitError(fmt.Sprintf("format should be oneOf ['json', 'ttl']. Recieved %s", format), 1)
 		}
 
+		// Create the channel and start emitting messages
 		ch := make(chan log)
 		go generateLog(config, num, rate, ch)
 
+		// For each message call the serializer and write to the output
 		for log := range ch {
 			b, err := serializer(log)
 			if err != nil {

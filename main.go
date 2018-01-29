@@ -22,6 +22,7 @@ import (
 	"github.com/urfave/cli"
 )
 
+// Schema of a SPECIAL log message.
 type log struct {
 	Timestamp  int64    `json:"timestamp"`
 	Process    string   `json:"process"`
@@ -31,6 +32,10 @@ type log struct {
 	Attributes []string `json:"attributes"`
 }
 
+// Schema of the configuration file of this application.
+// The configure command will output a valid configuration file.
+// It's code relies heavily on reflection, so that any changes to this struct
+// are immediately reflected in the command.
 type config struct {
 	Process    []string `json:"process,omitempty"`
 	Purpose    []string `json:"purpose,omitempty"`
@@ -39,6 +44,7 @@ type config struct {
 	Attributes []string `json:"attributes,omitempty"`
 }
 
+// Some hardcoded default values to make life easier for the user.
 var defaultConfig = config{
 	Process:    []string{"mailinglist", "send-invoice"},
 	Purpose:    []string{"marketing", "billing"},
