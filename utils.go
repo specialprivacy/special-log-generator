@@ -40,11 +40,10 @@ func getRandomList(values []string) []string {
 func getOutput(file string) (*os.File, error) {
 	if file == "" {
 		return os.Stdout, nil
-	} else {
-		output, err := os.Create(file)
-		if err != nil {
-			return nil, err
-		}
-		return output, nil
 	}
+	output, err := os.Create(file)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
 }

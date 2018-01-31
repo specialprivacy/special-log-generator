@@ -17,7 +17,7 @@ func makeLog(config config) log {
 		Process:    getRandomValue(config.Process),
 		Purpose:    getRandomValue(config.Purpose),
 		Location:   getRandomValue(config.Location),
-		UserId:     getRandomValue(config.UserId),
+		UserID:     getRandomValue(config.UserID),
 		Attributes: getRandomList(config.Attributes),
 	}
 }
@@ -42,7 +42,7 @@ func generateLog(config config, n int, rate time.Duration, c chan log) {
 	}
 }
 
-var ttlTemplate = getTtlTemplate()
+var ttlTemplate = getTTLTemplate()
 
 // ttlMarshal renders a value in tuttle syntax according to the ttlTemplate.
 // It is meant to be API compatible with json.Marshal.

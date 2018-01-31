@@ -42,7 +42,7 @@ Example of a fully specified config file:
   "process": ["foo", "bar"],
   "purpose": ["marketing", "delivery"],
   "location": ["greenland", "iceland", "mordor"],
-  "userId": ["1", "2", "3"],
+  "userID": ["1", "2", "3"],
   "attributes": ["height", "gender"]
 }
 ```

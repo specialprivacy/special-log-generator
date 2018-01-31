@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func getTtlTemplate() *template.Template {
+func getTTLTemplate() *template.Template {
 	funcMap := template.FuncMap{
 		"randomUUID": randomUUID,
 		"toISOTime": func(t int64) string {
