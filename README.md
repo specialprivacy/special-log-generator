@@ -28,7 +28,7 @@ The config file format is json which takes the following keys:
 - `process`: An array of strings with potential values for `process`
 - `purpose`: An array of strings with potential values for `purpose`
 - `location`: An array of strings with potential values for `location`
-- `userId`: An array of strings with potential values for `userId`
+- `userID`: An array of strings with potential values for `userId`
 - `attributes`: An array of strings with potential values for `attributes`
 
 If the config file contains unknown keys, they will be ignored.
@@ -55,8 +55,8 @@ Example of a fully specified config file:
 - `--purposePrefix`: The prefix string to be used for the generated Purpose attributes (default: "Purpose")
 - `--locationNum`: The number of Location attribute values to generate (default: 0)
 - `--locationPrefix`: The prefix string to be used for the generated Location attributes (default: "Location")
-- `--userIdNum`: The number of UserId attribute values to generate (default: 0)
-- `--userIdPrefix`: The prefix string to be used for the generated UserId attributes (default: "UserId")
+- `--userIDNum`: The number of UserId attribute values to generate (default: 0)
+- `--userIDPrefix`: The prefix string to be used for the generated UserId attributes (default: "UserId")
 - `--attributesNum`: The number of Attributes attribute values to generate (default: 0)
 - `--attributesPrefix`: The prefix string to be used for the generated Attributes attributes (default: "Attributes")
 
