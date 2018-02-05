@@ -15,13 +15,15 @@ slg [global options] command [command options]
 ```
 
 The application has the following commands:
-- **generate** Generate logs messages in the special format
+- **generate** Generate messages in the special formats
 
 ### Generate Options
-- `--rate`: The rate at which the generator outputs log statements. This parameter understands golang time syntax eg: `1s` or `10ms` (default: `0s`)
-- `--num`: The total number of statements that will be generated. When this parameters is <=0 it will create an infinite stream (default: `10`)
-- `--config`: The path to a config file in json containing alternative values for the logs
-- `--output`: The file to which the logs will be written. Be carefull, because this will overwrite the file should it already exist (default: `stdout`)
+- `--rate`: The rate at which the generator outputs events. This parameter understands golang time syntax eg: `1s` or `10ms` (default: `0s`)
+- `--num`: The total number of events that will be generated. When this parameters is <=0 it will create an infinite stream (default: `10`)
+- `--config`: The path to a config file in json containing alternative values for the events
+- `--output`: The file to which the events will be written. Be carefull, because this will overwrite the file should it already exist (default: `stdout`)
+- `--format`: The serialization format used to write the events (json or ttl) (default: `json`)
+- `--type`: The type of event to be generated (log or consent) (default: "log")
 
 ### Config file format
 The config file format is json which takes the following keys:
@@ -48,22 +50,26 @@ Example of a fully specified config file:
 ```
 
 ### Configure Options
-- `--output`: The file to which the generated log statements should be written (default: stdout)
-- `--processNum`: The number of Process attribute values to generate (default: 0)
-- `--processPrefix`: The prefix string to be used for the generated Process attributes (default: "Process")
-- `--purposeNum`: The number of Purpose attribute values to generate (default: 0)
-- `--purposePrefix`: The prefix string to be used for the generated Purpose attributes (default: "Purpose")
-- `--locationNum`: The number of Location attribute values to generate (default: 0)
-- `--locationPrefix`: The prefix string to be used for the generated Location attributes (default: "Location")
-- `--userIDNum`: The number of UserId attribute values to generate (default: 0)
-- `--userIDPrefix`: The prefix string to be used for the generated UserId attributes (default: "UserId")
-- `--attributesNum`: The number of Attributes attribute values to generate (default: 0)
-- `--attributesPrefix`: The prefix string to be used for the generated Attributes attributes (default: "Attributes")
+- `--output`: The file to which the generated configuration should be written (default: `stdout`)
+- `--processNum`: The number of Process attribute values to generate (default: `0`)
+- `--processPrefix`: The prefix string to be used for the generated Process attributes (default: `Process`)
+- `--purposeNum`: The number of Purpose attribute values to generate (default: `0`)
+- `--purposePrefix`: The prefix string to be used for the generated Purpose attributes (default: `Purpose`)
+- `--locationNum`: The number of Location attribute values to generate (default: `0`)
+- `--locationPrefix`: The prefix string to be used for the generated Location attributes (default: `Location`)
+- `--userIDNum`: The number of UserId attribute values to generate (default: `0`)
+- `--userIDPrefix`: The prefix string to be used for the generated UserId attributes (default: `UserId`)
+- `--attributesNum`: The number of Attributes attribute values to generate (default: `0`)
+- `--attributesPrefix`: The prefix string to be used for the generated Attributes attributes (default: `Attributes`)
 
 ### Examples
 - Print 10 random logs to `stdout`
 ```bash
 slg generate
+```
+- Print 10 random consents to `stdout`
+```bash
+sgl generate -t consent
 ```
 - Print 100 random logs to `logs.json`
 ```bash

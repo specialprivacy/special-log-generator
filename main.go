@@ -32,6 +32,15 @@ type log struct {
 	Attributes []string `json:"attributes"`
 }
 
+// Schema of a SPECIAL consent event
+type consent struct {
+	Timestamp int64  `json:"timestamp"`
+	Purpose   string `json:"purpose"`
+	Location  string `json:"location"`
+	UserID    string `json:"userID"`
+	Attribute string `json:"attribute"`
+}
+
 // Schema of the configuration file of this application.
 // The configure command will output a valid configuration file.
 // It's code relies heavily on reflection, so that any changes to this struct
@@ -57,7 +66,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Special Log Generator"
 	app.HelpName = "slg"
-	app.Usage = "Create a stream of pseudo random log statements in the Special format"
+	app.Usage = "Create a stream of pseudo random events in the Special format"
 	app.ArgsUsage = " "
 	app.EnableBashCompletion = true
 	app.Version = "1.0.0"

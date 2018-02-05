@@ -39,7 +39,7 @@ func createCommandFlags(attributes []string) []cli.Flag {
 	output := make([]cli.Flag, len(attributes)*2+numRegularFlags)
 	output[0] = cli.StringFlag{
 		Name:  "output, o",
-		Usage: "The `file` to which the generated log statements should be written (default: stdout)",
+		Usage: "The `file` to which the generated configuration should be written (default: stdout)",
 	}
 	for i, v := range attributes {
 		index := i*2 + numRegularFlags
