@@ -22,10 +22,6 @@
 
 
 [[constraint]]
-  name = "github.com/confluentinc/confluent-kafka-go"
-  version = "0.11.0"
-
-[[constraint]]
   name = "github.com/urfave/cli"
   version = "1.20.0"
 
@@ -33,6 +29,3 @@
   name = "github.com/google/uuid"
   version = "0.2.0"
 
-[[constraint]]
-  name = "github.com/leanovate/gopter"
-  version = "0.2.0"
