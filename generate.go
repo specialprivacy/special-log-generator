@@ -14,23 +14,26 @@ import (
 // makeLog creates a log statement from a random selection of the values in config.
 func makeLog(config config) interface{} {
 	return log{
-		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
-		Process:    getRandomValue(config.Process),
-		Purpose:    getRandomValue(config.Purpose),
-		Location:   getRandomValue(config.Location),
-		UserID:     getRandomValue(config.UserID),
-		Attributes: getRandomList(config.Attributes),
+		Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
+		Process:   getRandomValue(config.Process),
+		Purpose:   getRandomValue(config.Purpose),
+		Storage:   getRandomValue(config.Storage),
+		UserID:    getRandomValue(config.UserID),
+		Data:      getRandomList(config.Data),
 	}
 }
 
 // makeConsent creates a consent event from a random selection of the values in the config.
 func makeConsent(config config) interface{} {
 	return consent{
-		Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
-		Purpose:   getRandomValue(config.Purpose),
-		Location:  getRandomValue(config.Location),
-		UserID:    getRandomValue(config.UserID),
-		Attribute: getRandomValue(config.Attributes),
+		ConsentID:  randomUUID(),
+		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
+		Purpose:    getRandomValue(config.Purpose),
+		Processing: getRandomValue(config.Processing),
+		Recipient:  getRandomValue(config.Recipient),
+		Storage:    getRandomValue(config.Storage),
+		UserID:     getRandomValue(config.UserID),
+		Data:       getRandomValue(config.Data),
 	}
 }
 

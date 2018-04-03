@@ -27,18 +27,22 @@ type log struct {
 	Timestamp  int64    `json:"timestamp"`
 	Process    string   `json:"process"`
 	Purpose    string   `json:"purpose"`
-	Location   string   `json:"location"`
+	Processing string   `json:"processing"`
+	Storage    string   `json:"storage"`
 	UserID     string   `json:"userID"`
-	Attributes []string `json:"attributes"`
+	Data       []string `json:"data"`
 }
 
 // Schema of a SPECIAL consent event
 type consent struct {
-	Timestamp int64  `json:"timestamp"`
-	Purpose   string `json:"purpose"`
-	Location  string `json:"location"`
-	UserID    string `json:"userID"`
-	Attribute string `json:"attribute"`
+	ConsentID  string `json:"-"`
+	Timestamp  int64  `json:"timestamp"`
+	Purpose    string `json:"purpose"`
+	Processing string `json:"processing"`
+	Recipient  string `json:"recipient"`
+	Storage    string `json:"storage"`
+	UserID     string `json:"userID"`
+	Data       string `json:"data"`
 }
 
 // Schema of the configuration file of this application.
@@ -48,19 +52,50 @@ type consent struct {
 type config struct {
 	Process    []string `json:"process,omitempty"`
 	Purpose    []string `json:"purpose,omitempty"`
-	Location   []string `json:"location,omitempty"`
+	Processing []string `json:"processing,omitempty"`
+	Recipient  []string `json:"recipient,omitempty"`
+	Storage    []string `json:"storage,omitempty"`
 	UserID     []string `json:"userID,omitempty"`
-	Attributes []string `json:"attributes,omitempty"`
+	Data       []string `json:"data,omitempty"`
 }
 
-// Some hardcoded default values to make life easier for the user.
-var defaultConfig = config{
-	Process:    []string{"mailinglist", "send-invoice"},
-	Purpose:    []string{"marketing", "billing"},
-	Location:   []string{"belgium", "germany", "austria", "france"},
-	UserID:     makeUUIDList(5),
-	Attributes: []string{"name", "age", "email", "address", "hartrate"},
+func makeDefaultConfig() config {
+	// Some hardcoded default values to make life easier for the user.
+	defaultProcess := []string{"mailinglist", "send-invoice"}
+	defaultPurpose := []string{"spl:AnyPurpose", "svpu:Account", "svpu:Admin", "svpu:AnyContact", "svpu:Arts", "svpu:AuxPurpose", "svpu:Browsing", "svpu:Charity", "svpu:Communicate", "svpu:Current", "svpu:Custom", "svpu:Delivery", "svpu:Develop", "svpu:Downloads", "svpu:Education", "svpu:Feedback", "svpu:Finmgt", "svpu:Gambling", "svpu:Gaming", "svpu:Government", "svpu:Health", "svpu:Historical", "svpu:Login", "svpu:Marketing", "svpu:News", "svpu:OtherContact", "svpu:Payment", "svpu:Sales", "svpu:Search", "svpu:State", "svpu:Tailoring", "svpu:Telemarketing"}
+	for index, purpose := range defaultPurpose {
+		defaultPurpose[index] = expandPrefix(purpose)
+	}
+	defaultProcessing := []string{"spl:AnyProcessing", "svpr:Aggregate", "svpr:Analyze", "svpr:Anonymize", "svpr:Collect", "svpr:Copy", "svpr:Derive", "svpr:Move", "svpr:Query", "svpr:Transfer"}
+	for index, processing := range defaultProcessing {
+		defaultProcessing[index] = expandPrefix(processing)
+	}
+	defaultRecipient := []string{"spl:AnyRecipient", "svr:Delivery", "svr:OtherRecipient", "svr:Ours", "svr:Public", "svr:Same", "svr:Unrelated"}
+	for index, recipient := range defaultRecipient {
+		defaultRecipient[index] = expandPrefix(recipient)
+	}
+	defaultStorage := []string{"spl:AnyLocation", "svl:ControllerServers", "svl:EU", "svl:EULike", "svl:ThirdCountries", "svl:OurServers", "svl:ProcessorServers", "svl:ThirdParty"}
+	for index, storage := range defaultStorage {
+		defaultStorage[index] = expandPrefix(storage)
+	}
+	defaultData := []string{"spl:AnyData", "svd:Activity", "svd:Anonymized", "svd:AudiovisualActivity", "svd:Computer", "svd:Content", "svd:Demographic", "svd:Derived", "svd:Financial", "svd:Government", "svd:Health", "svd:Interactive", "svd:Judicial", "svd:Location", "svd:Navigation", "svd:Online", "svd:OnlineActivity", "svd:Physical", "svd:PhysicalActivity", "svd:Political", "svd:Preference", "svd:Profile", "svd:Purchase", "svd:Social", "svd:State", "svd:Statistical", "svd:TelecomActivity", "svd:UniqueId"}
+	for index, data := range defaultData {
+		defaultData[index] = expandPrefix(data)
+	}
+
+	return config{
+		Process:    defaultProcess,
+		Purpose:    defaultPurpose,
+		Processing: defaultProcessing,
+		Storage:    defaultStorage,
+		Recipient:  defaultRecipient,
+		UserID:     makeUUIDList(5),
+		Data:       defaultData,
+	}
+
 }
+
+var defaultConfig = makeDefaultConfig()
 
 func main() {
 	app := cli.NewApp()

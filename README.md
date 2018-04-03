@@ -105,7 +105,9 @@ go build
 ```
 
 ## TODO
-* Provide an option to generate configuration files with certain properties
+* Bring log format in ttl in line with deliverable
+* Investigate an option to group generated policies by userID (might have memory usage consequences at high rates / volumes, will most likely be mutually exlcusive streaming)
+* Get a decision whether policies are linked with a datasubject through `#hasPolicy` or `#hasDataSubject` and add these properties to the vocabulary
 
 ## LICENSE
 Apache-2.0 © Tenforce
