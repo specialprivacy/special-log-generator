@@ -89,7 +89,7 @@ var generateCommand = cli.Command{
 		cli.DurationFlag{
 			Name:  "rate",
 			Value: time.Duration(0),
-			Usage: "The `rate` at which the generator outputs events. Understands golang time syntax eg: 1s",
+			Usage: "The `rate` at which the generator outputs events. Understands golang duration syntax eg: 1s",
 		},
 		cli.IntFlag{
 			Name:  "num",
@@ -118,6 +118,11 @@ var generateCommand = cli.Command{
 	Action: func(c *cli.Context) error {
 		rate := c.Duration("rate")
 		num := c.Int("num")
+
+		// Ensure rate and num are using sane combinations
+		if rate == 0 && num <= 0 {
+			return cli.NewExitError("Streaming (num <= 0) must be used with a non-zero rate duration", 1)
+		}
 
 		// Parse out the configuration should there be any
 		configFlag := c.String("config")

@@ -18,7 +18,7 @@ The application has the following commands:
 - **generate** Generate messages in the special formats
 
 ### Generate Options
-- `--rate`: The rate at which the generator outputs events. This parameter understands golang time syntax eg: `1s` or `10ms` (default: `0s`)
+- `--rate`: The rate at which the generator outputs events. This parameter understands golang duration syntax eg: `1s` or `10ms` (default: `0s`)
 - `--num`: The total number of events that will be generated. When this parameters is <=0 it will create an infinite stream (default: `10`)
 - `--config`: The path to a config file in json containing alternative values for the events
 - `--output`: The file to which the events will be written. Be carefull, because this will overwrite the file should it already exist (default: `stdout`)
