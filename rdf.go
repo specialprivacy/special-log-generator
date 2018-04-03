@@ -27,6 +27,14 @@ func expandPrefix(term string) string {
 		return "http://www.specialprivacy.eu/vocabs/locations#" + attr
 	case "svd":
 		return "http://www.specialprivacy.eu/vocabs/data#" + attr
+	case "splog":
+		return "http://www.specialprivacy.eu/langs/splog#" + attr
+	case "dct":
+		return "http://purl.org/dc/terms/" + attr
+	case "prov":
+		return "http://www.w3.org/ns/prov#" + attr
+	case "skos":
+		return "http://www.w3.org/2004/02/skos/core#" + attr
 	default:
 		return term
 	}
@@ -40,13 +48,17 @@ func getLogTTLTemplate() *template.Template {
 			return fmt.Sprintf("%s", output)
 		},
 	}
-	tmpl := "<http://www.specialprivacy.eu/log/{{randomUUID}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/vocabs/logs#log>;" +
-		"<http://www.specialprivacy.eu/langs/usage-policy#hasPurpose><http://www.specialprivacy.eu/vocabs/purposes#{{.Purpose}}>;" +
-		"<http://www.specialprivacy.eu/langs/usage-policy#hasStorage><http://www.specialprivacy.eu/vocabs/locations#{{.Location}}>;" +
-		"<http://www.specialprivacy.eu/langs/usage-policy#hasDataSubject><http://www.example.com/users/{{.UserID}}>;" +
-		"<http://www.specialprivacy.eu/langs/usage-policy#hasProcessing><http://www.specialprivacy.eu/vocabs/processing#{{.Process}}>;" +
-		"{{range .Attributes}}<http://www.specialprivacy.eu/langs/usage-policy#hasData><http://www.specialprivacy.eu/vocabs/data#{{.}}>;{{end}}" +
-		"<http://purl.org/dc/terms/created>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>."
+	tmpl := "{{$logID := randomUUID}}{{if .Process}}<http://example.com/logs/{{.Process}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#Log>;" +
+		"<http://www.specialprivacy.eu/langs/splog#processor><http://example.com/applications/{{.Process}}>;" +
+		"<http://www.specialprivacy.eu/langs/splog#logEntry><http://example.com/logEntries/{{$logID}}.{{end}}" +
+		"<http://example.com/logEntries/{{$logID}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#LogEntry>" +
+		"{{if .Purpose}};<http://www.specialprivacy.eu/langs/usage-policy#hasPurpose><{{.Purpose}}>{{end}}" +
+		"{{if .Processing}};<http://www.specialprivacy.eu/langs/usage=policy#hasProcessing><{{.Processing}}>{{end}}" +
+		"{{if .Storage}};<http://www.specialprivacy.eu/langs/usage-policy#hasStorage><{{.Storage}}>{{end}}" +
+		"{{if .Recipient}};<http://www.specialprivacy.eu/langs/usage-policy#hasRecipient><{{.Recipient}}>{{end}}" +
+		"{{if .UserID}};<http://www.specialprivacy.eu/langs/usage-policy#hasDataSubject><http://www.example.com/users/{{.UserID}}>{{end}}" +
+		"{{if .Data}}{{range .Data}};<http://www.specialprivacy.eu/langs/usage-policy#hasData><{{.}}>{{end}}{{end}}" +
+		"{{if .Timestamp}};<http://www.specialprivacy.eu/langs/splog#transactionTime>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>{{end}}."
 	output, _ := template.New("ttl-template").Funcs(funcMap).Parse(tmpl)
 	return output
 }

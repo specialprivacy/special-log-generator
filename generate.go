@@ -14,12 +14,14 @@ import (
 // makeLog creates a log statement from a random selection of the values in config.
 func makeLog(config config) interface{} {
 	return log{
-		Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
-		Process:   getRandomValue(config.Process),
-		Purpose:   getRandomValue(config.Purpose),
-		Storage:   getRandomValue(config.Storage),
-		UserID:    getRandomValue(config.UserID),
-		Data:      getRandomList(config.Data),
+		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
+		Process:    getRandomValue(config.Process),
+		Purpose:    getRandomValue(config.Purpose),
+		Processing: getRandomValue(config.Processing),
+		Recipient:  getRandomValue(config.Recipient),
+		Storage:    getRandomValue(config.Storage),
+		UserID:     getRandomValue(config.UserID),
+		Data:       getRandomList(config.Data),
 	}
 }
 
@@ -157,7 +159,7 @@ var generateCommand = cli.Command{
 			producer = makeConsent
 			ttlTemplate = getConsentTTLTemplate()
 		} else {
-			return cli.NewExitError(fmt.Sprintf("type should be oneOf ['log']"), 1)
+			return cli.NewExitError(fmt.Sprintf("type should be oneOf ['log', 'consent']"), 1)
 		}
 
 		// Parse out the format flag (json or ttl)

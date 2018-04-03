@@ -28,6 +28,7 @@ type log struct {
 	Process    string   `json:"process"`
 	Purpose    string   `json:"purpose"`
 	Processing string   `json:"processing"`
+	Recipient  string   `json:"recipient"`
 	Storage    string   `json:"storage"`
 	UserID     string   `json:"userID"`
 	Data       []string `json:"data"`
