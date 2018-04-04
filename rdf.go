@@ -48,17 +48,20 @@ func getLogTTLTemplate() *template.Template {
 			return fmt.Sprintf("%s", output)
 		},
 	}
-	tmpl := "{{$logID := randomUUID}}{{if .Process}}<http://example.com/logs/{{.Process}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#Log>;" +
-		"<http://www.specialprivacy.eu/langs/splog#processor><http://example.com/applications/{{.Process}}>;" +
-		"<http://www.specialprivacy.eu/langs/splog#logEntry><http://example.com/logEntries/{{$logID}}.{{end}}" +
+	tmpl := "{{$logID := randomUUID}}{{$contentId := randomUUID}}" +
+		"{{if .Process}}<http://example.com/logs/{{.Process}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#Log>;" +
+		"<http://www.w3.org/ns/prov#wasAttributedTo><http://example.com/applications/{{.Process}}>;" +
+		"<http://www.specialprivacy.eu/langs/splog#logEntry><http://example.com/logEntries/{{$logID}}>.{{end}}" +
 		"<http://example.com/logEntries/{{$logID}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#LogEntry>" +
+		"{{if .Timestamp}};<http://www.specialprivacy.eu/langs/splog#transactionTime>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>{{end}}" +
+		"{{if .UserID}};<http://www.specialprivacy.eu/langs/splog#dataSubject><http://www.example.com/users/{{.UserID}}>{{end}}" +
+		";<http://www.specialprivacy.eu/langs/splog#logEntryContent><http://example.com/logEntryContents/{{$contentId}}>." +
+		"<http://example.com/logEntryContents/{{$contentId}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#LogEntryContent>" +
 		"{{if .Purpose}};<http://www.specialprivacy.eu/langs/usage-policy#hasPurpose><{{.Purpose}}>{{end}}" +
 		"{{if .Processing}};<http://www.specialprivacy.eu/langs/usage=policy#hasProcessing><{{.Processing}}>{{end}}" +
 		"{{if .Storage}};<http://www.specialprivacy.eu/langs/usage-policy#hasStorage><{{.Storage}}>{{end}}" +
 		"{{if .Recipient}};<http://www.specialprivacy.eu/langs/usage-policy#hasRecipient><{{.Recipient}}>{{end}}" +
-		"{{if .UserID}};<http://www.specialprivacy.eu/langs/usage-policy#hasDataSubject><http://www.example.com/users/{{.UserID}}>{{end}}" +
-		"{{if .Data}}{{range .Data}};<http://www.specialprivacy.eu/langs/usage-policy#hasData><{{.}}>{{end}}{{end}}" +
-		"{{if .Timestamp}};<http://www.specialprivacy.eu/langs/splog#transactionTime>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>{{end}}."
+		"{{if .Data}}{{range .Data}};<http://www.specialprivacy.eu/langs/usage-policy#hasData><{{.}}>{{end}}{{end}}."
 	output, _ := template.New("ttl-template").Funcs(funcMap).Parse(tmpl)
 	return output
 }
