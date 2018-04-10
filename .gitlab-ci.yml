@@ -3,6 +3,7 @@ image: golang:1.9-alpine
 stages:
   - build
   # TODO: add tests and a test stage
+  - sync
   - release
 
 build:
@@ -13,6 +14,25 @@ build:
     - go build
   except:
     - tags
+
+sync:
+  stage: sync
+  image: alpine
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - apk --update add git
+     # We need ssh-agent to safely inject the private key (see https://docs.gitlab.com/ee/ci/ssh_keys/README.html#ssh-keys-when-using-the-docker-executor)
+    - 'which ssh-agent || (apk add --no-cache openssh-client)'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | ssh-add /dev/stdin
+    - mkdir -p ~/.ssh
+    # The following line disables host key checking
+    # A more secure version could have all the cluster pubkeys in a variable and enable host key checking here
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - git push --mirror ${GITHUB_REMOTE}
+  only:
+    - master
 
 .release-template: &release-template
   stage: release
