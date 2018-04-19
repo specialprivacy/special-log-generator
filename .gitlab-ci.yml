@@ -45,7 +45,7 @@ sync:
     - cp -r `pwd` $GOPATH/src/special-log-generator
     - cd $GOPATH/src/special-log-generator
     - go build
-    - cp special-log-generator${EXTENSION} ${CI_PROJECT_DIR}/slg${EXTENSION}
+    - cp special-log-generator${EXTENSION} ${CI_PROJECT_DIR}/special-log-generator${EXTENSION}
   only:
     - tags
 

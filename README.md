@@ -11,7 +11,7 @@ The binaries are standalone and do not have any further dependencies
 
 ### Basic usage
 ```bash
-slg [global options] command [command options]
+special-log-generator [global options] command [command options]
 ```
 
 The application has the following commands:
@@ -65,23 +65,23 @@ Example of a fully specified config file:
 ### Examples
 - Print 10 random logs to `stdout`
 ```bash
-slg generate
+special-log-generator generate
 ```
 - Print 10 random consents to `stdout`
 ```bash
-sgl generate -t consent
+special-log-generator generate -t consent
 ```
 - Print 100 random logs to `logs.json`
 ```bash
-slg generate --num 100 --output logs.json
+special-log-generator generate --num 100 --output logs.json
 ```
 - Print 10 logs at a rate of 1 every second to `stdout`
 ```bash
-slg generate --rate 1s
+special-log-generator generate --rate 1s
 ```
 - Pipe an infinite stream of logs every 10ms to apache kafka
 ```bash
-slg generate --rate 10ms --num -1 | kafka-cli-producer --broker-list http://kafka:9300 --zookeeper http://zookeeper:2181 --topic special-logs
+special-log-generator generate --rate 10ms --num -1 | kafka-cli-producer --broker-list http://kafka:9300 --zookeeper http://zookeeper:2181 --topic special-logs
 ```
 
 ## Build
