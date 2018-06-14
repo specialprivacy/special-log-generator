@@ -40,7 +40,7 @@ sync:
     EXTENSION: ""
   artifacts:
     untracked: true
-    name: "slg-${CI_COMMIT_REF_NAME}-${GOOS}-${GOARCH}"
+    name: "special-log-generator-${CI_COMMIT_REF_NAME}-${GOOS}-${GOARCH}"
   script:
     - cp -r `pwd` $GOPATH/src/special-log-generator
     - cd $GOPATH/src/special-log-generator
