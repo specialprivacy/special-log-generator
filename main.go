@@ -111,7 +111,7 @@ func main() {
 	app.Usage = "Create a stream of pseudo random events in the Special format"
 	app.ArgsUsage = " "
 	app.EnableBashCompletion = true
-	app.Version = "1.0.0"
+	app.Version = "1.5.0"
 	app.Authors = []cli.Author{
 		{
 			Name:  "Wouter Dullaert",
