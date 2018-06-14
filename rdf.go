@@ -78,13 +78,17 @@ func getConsentTTLTemplate() *template.Template {
 	tmpl :=
 		"<http://www.example.com/users/{{.UserID}}><http://www.specialprivacy.eu/langs/usage-policy#hasPolicy><http://www.example.com/policy/{{.ConsentID}}>." +
 			"<http://www.example.com/policy/{{.ConsentID}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/vocabs/policy#Consent>" +
-			"{{if .Purpose}};<http://www.specialprivacy.eu/langs/usage-policy#hasPurpose><{{.Purpose}}>{{end}}" +
+			"{{if .Timestamp}};<http://purl.org/dc/terms/created>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>{{end}}" +
+			"{{if .UserID}};<http://www.specialprivacy.eu/langs/usage-policy#hasDataSubject><http://www.example.com/users/{{.UserID}}>{{end}}" +
+			"{{range .SimplePolicies}}" +
+			";<http://www.specialprivacy.eu/vocabs/policy#SimplePolicy>[" +
+			"{{if .Purpose}}<http://www.specialprivacy.eu/langs/usage-policy#hasPurpose><{{.Purpose}}>{{end}}" +
 			"{{if .Processing}};<http://www.specialprivacy.eu/langs/usage=policy#hasProcessing><{{.Processing}}>{{end}}" +
 			"{{if .Storage}};<http://www.specialprivacy.eu/langs/usage-policy#hasStorage><{{.Storage}}>{{end}}" +
 			"{{if .Recipient}};<http://www.specialprivacy.eu/langs/usage-policy#hasRecipient><{{.Recipient}}>{{end}}" +
-			"{{if .UserID}};<http://www.specialprivacy.eu/langs/usage-policy#hasDataSubject><http://www.example.com/users/{{.UserID}}>{{end}}" +
 			"{{if .Data}};<http://www.specialprivacy.eu/langs/usage-policy#hasData><{{.Data}}>{{end}}" +
-			"{{if .Timestamp}};<http://purl.org/dc/terms/created>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>{{end}}."
+			"]" +
+			"{{end}}."
 	output, _ := template.New("ttl-template").Funcs(funcMap).Parse(tmpl)
 	return output
 }

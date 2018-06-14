@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"text/template"
 	"time"
 
@@ -27,15 +28,21 @@ func makeLog(config config) interface{} {
 
 // makeConsent creates a consent event from a random selection of the values in the config.
 func makeConsent(config config) interface{} {
-	return consent{
-		ConsentID:  randomUUID(),
-		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
-		Purpose:    getRandomValue(config.Purpose),
-		Processing: getRandomValue(config.Processing),
-		Recipient:  getRandomValue(config.Recipient),
-		Storage:    getRandomValue(config.Storage),
-		UserID:     getRandomValue(config.UserID),
-		Data:       getRandomValue(config.Data),
+	simplePolicies := make([]simplepolicy, rand.Intn(config.MaxPolicySize))
+	for i := range simplePolicies {
+		simplePolicies[i] = simplepolicy{
+			Purpose:    getRandomValue(config.Purpose),
+			Processing: getRandomValue(config.Processing),
+			Recipient:  getRandomValue(config.Recipient),
+			Storage:    getRandomValue(config.Storage),
+			Data:       getRandomValue(config.Data),
+		}
+	}
+	return policy{
+		ConsentID:      randomUUID(),
+		Timestamp:      time.Now().UnixNano() / int64(time.Millisecond),
+		UserID:         getRandomValue(config.UserID),
+		SimplePolicies: simplePolicies,
 	}
 }
 
