@@ -81,7 +81,7 @@ func getConsentTTLTemplate() *template.Template {
 			"{{if .Timestamp}};<http://purl.org/dc/terms/created>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>{{end}}" +
 			"{{if .UserID}};<http://www.specialprivacy.eu/langs/usage-policy#hasDataSubject><http://www.example.com/users/{{.UserID}}>{{end}}" +
 			"{{range .SimplePolicies}}" +
-			";<http://www.specialprivacy.eu/vocabs/policy#SimplePolicy>[" +
+			";<http://www.specialprivacy.eu/vocabs/policy#simplePolicy>[" +
 			"{{if .Purpose}}<http://www.specialprivacy.eu/langs/usage-policy#hasPurpose><{{.Purpose}}>{{end}}" +
 			"{{if .Processing}};<http://www.specialprivacy.eu/langs/usage=policy#hasProcessing><{{.Processing}}>{{end}}" +
 			"{{if .Storage}};<http://www.specialprivacy.eu/langs/usage-policy#hasStorage><{{.Storage}}>{{end}}" +
