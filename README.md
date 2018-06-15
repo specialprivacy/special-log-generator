@@ -18,12 +18,18 @@ The application has the following commands:
 - **generate** Generate messages in the special formats
 
 ### Generate Options
-- `--rate`: The rate at which the generator outputs events. This parameter understands golang duration syntax eg: `1s` or `10ms` (default: `0s`)
-- `--num`: The total number of events that will be generated. When this parameters is <=0 it will create an infinite stream (default: `10`)
-- `--config`: The path to a config file in json containing alternative values for the events
-- `--output`: The file to which the events will be written. Be carefull, because this will overwrite the file should it already exist (default: `stdout`)
-- `--format`: The serialization format used to write the events (json or ttl) (default: `json`)
-- `--type`: The type of event to be generated (log or consent) (default: "log")
+- `--rate`: The rate at which the generator outputs events. This parameter understands golang duration syntax eg: `1s` or `10ms` (default: `0s`) [$RATE]
+- `--num`: The total number of events that will be generated. When this parameters is <=0 it will create an infinite stream (default: `10`) [$NUM]
+- `--config`: The path to a config file in json containing alternative values for the events [$CONFIG]
+- `--output`: The file to which the generated events should be written. If the special value 'kafka' is used, logs will be produced on kafka. (default: `stdout`) [$OUTPUT]
+- `--format`: The serialization format used to write the events (json or ttl) (default: `json`) [$FORMAT]
+- `--type`: The type of event to be generated (log or consent) (default: `log`) [$TYPE]
+- `--kafka-broker-list`: A comma separated list of brokers used to bootstrap the connection to a kafka cluster. eg: `127.0.0.1,172.10.50.4` [$KAFKA_BROKER_LIST]
+- `--kafka-topic`: The name of the topic on which logs will be produced. (default: `application-logs`) [$KAFKA_TOPIC]
+- `--kafka-cert-file`: The path to a certificate file used for client authentication to kafka. [$KAFKA_CERT_FILE]
+- `--kafka-key-file`: The path to a key file used for client authentication to kafka. [$KAFKA_KEY_FILE]
+- `--kafka-ca-file`: The path to a ca file used for client authentication to kafka. [$KAFKA_CA_FILE]
+- `--kafka-verify-ssl`: Set to verify the SSL chain when connecting to kafka [$KAFKA_VERIFY_SSL]
 
 ### Config file format
 The config file format is json which takes the following keys:
@@ -81,7 +87,7 @@ special-log-generator generate --rate 1s
 ```
 - Pipe an infinite stream of logs every 10ms to apache kafka
 ```bash
-special-log-generator generate --rate 10ms --num -1 | kafka-cli-producer --broker-list http://kafka:9300 --zookeeper http://zookeeper:2181 --topic special-logs
+special-log-generator generate --rate 10ms --num -1 --output kafka --kafka-broker-list kafka:9092 --kafka-topic special-logs
 ```
 
 ## Build
@@ -106,7 +112,7 @@ go build
 
 ## TODO
 * Bring log format in ttl in line with deliverable
-* Investigate an option to group generated policies by userID (might have memory usage consequences at high rates / volumes, will most likely be mutually exlcusive streaming)
+* Investigate an option to group generated policies by userID (might have memory usage consequences at high rates / volumes, will most likely be mutually exclusive streaming)
 * Get a decision whether policies are linked with a datasubject through `#hasPolicy` or `#hasDataSubject` and add these properties to the vocabulary
 * Change json outputs so that we can easily add an `@context` which results in the ttl represenation
 

@@ -153,7 +153,7 @@ var generateCommand = cli.Command{
 		cli.StringFlag{
 			Name:   "kafka-topic",
 			Value:  "application-logs",
-			Usage:  "The name of the topic on which logs will be produced. (default: application-logs)",
+			Usage:  "The name of the topic on which logs will be produced.",
 			EnvVar: "KAFKA_TOPIC",
 		},
 		cli.StringFlag{
