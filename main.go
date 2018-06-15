@@ -32,6 +32,7 @@ type log struct {
 	Storage    string   `json:"storage"`
 	UserID     string   `json:"userID"`
 	Data       []string `json:"data"`
+	EventID    string   `json:"eventID"`
 }
 
 // Schema of a SPECIAL simplepolicy event

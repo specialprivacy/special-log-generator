@@ -6,15 +6,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"text/template"
 	"time"
 
 	"github.com/urfave/cli"
+	sarama "gopkg.in/Shopify/sarama.v1"
 )
 
+type message struct {
+	Key   string
+	Value interface{}
+}
+
 // makeLog creates a log statement from a random selection of the values in config.
-func makeLog(config config) interface{} {
-	return log{
+func makeLog(config config) message {
+	log := log{
 		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
 		Process:    getRandomValue(config.Process),
 		Purpose:    getRandomValue(config.Purpose),
@@ -23,11 +30,16 @@ func makeLog(config config) interface{} {
 		Storage:    getRandomValue(config.Storage),
 		UserID:     getRandomValue(config.UserID),
 		Data:       getRandomList(config.Data),
+		EventID:    randomUUID(),
+	}
+	return message{
+		Key:   log.EventID,
+		Value: log,
 	}
 }
 
 // makeConsent creates a consent event from a random selection of the values in the config.
-func makeConsent(config config) interface{} {
+func makeConsent(config config) message {
 	simplePolicies := make([]simplepolicy, rand.Intn(config.MaxPolicySize))
 	for i := range simplePolicies {
 		simplePolicies[i] = simplepolicy{
@@ -38,11 +50,15 @@ func makeConsent(config config) interface{} {
 			Data:       getRandomValue(config.Data),
 		}
 	}
-	return policy{
+	policy := policy{
 		ConsentID:      randomUUID(),
 		Timestamp:      time.Now().UnixNano() / int64(time.Millisecond),
 		UserID:         getRandomValue(config.UserID),
 		SimplePolicies: simplePolicies,
+	}
+	return message{
+		Key:   policy.ConsentID,
+		Value: policy,
 	}
 }
 
@@ -53,8 +69,8 @@ func generateLog(
 	config config,
 	n int,
 	rate time.Duration,
-	producer func(config) interface{},
-	c chan interface{},
+	producer func(config) message,
+	c chan message,
 ) {
 	if n <= 0 {
 		for {
@@ -111,7 +127,7 @@ var generateCommand = cli.Command{
 		},
 		cli.StringFlag{
 			Name:  "output, o",
-			Usage: "The `file` to which the generated events should be written (default: stdout)",
+			Usage: "The `file` to which the generated events should be written. If the special value 'kafka' is used, logs will be produced on kafka. (default: stdout)",
 		},
 		cli.StringFlag{
 			Name:  "format, f",
@@ -122,6 +138,31 @@ var generateCommand = cli.Command{
 			Name:  "type, t",
 			Value: "log",
 			Usage: "The `type` of event to be generated (log or consent)",
+		},
+		cli.StringSliceFlag{
+			Name:  "kafka-broker-list",
+			Usage: "A comma separated list of `brokers` used to bootstrap the connection to a kafka cluster. eg: 127.0.0.1,172.10.50.4",
+		},
+		cli.StringFlag{
+			Name:  "kafka-topic",
+			Value: "application-logs",
+			Usage: "The name of the topic on which logs will be produced. (default: application-logs)",
+		},
+		cli.StringFlag{
+			Name:  "kafka-cert-file",
+			Usage: "The `path` to a certificate file used for client authentication to kafka.",
+		},
+		cli.StringFlag{
+			Name:  "kafka-key-file",
+			Usage: "The `path` to a key file used for client authentication to kafka.",
+		},
+		cli.StringFlag{
+			Name:  "kafka-ca-file",
+			Usage: "The `path` to a ca file used for client authentication to kafka.",
+		},
+		cli.BoolFlag{
+			Name:  "kafka-verify-ssl",
+			Usage: "Set to verify the SSL chain when connecting to kafka",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -148,16 +189,37 @@ var generateCommand = cli.Command{
 			}
 		}
 
-		// Parse the output flag
-		output, err := getOutput(c.String("output"))
-		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+		// Parse the output flag and kafka options
+		var kafkaProducer sarama.SyncProducer
+		var output *os.File
+		kafkaTopic := c.String("kafka-topic")
+		if c.String("output") == "kafka" {
+			fmt.Println("[INFO] Writing logs to kafka")
+			var err error
+			kafkaProducer, err = createKafkaProducer(kafkaConfig{
+				BrokerList: c.StringSlice("kafka-broker-list"),
+				CertFile:   c.String("kafka-cert-file"),
+				KeyFile:    c.String("kafka-key-file"),
+				CaFile:     c.String("kafka-ca-file"),
+				VerifySsl:  c.Bool("kafka-verify-ssl"),
+			})
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			defer kafkaProducer.Close()
+			fmt.Printf("[INFO] Successfully connected to kafka cluster at %s\n", c.StringSlice("kafka-broker-list"))
+		} else {
+			var err error
+			output, err = getOutput(c.String("output"))
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			defer output.Close()
 		}
-		defer output.Close()
 
 		// Parse out the type flag (log or consent)
 		eventType := c.String("type")
-		var producer func(config) interface{}
+		var producer func(config) message
 		var ttlTemplate *template.Template
 		if eventType == "log" {
 			producer = makeLog
@@ -181,18 +243,36 @@ var generateCommand = cli.Command{
 		}
 
 		// Create the channel and start emitting messages
-		ch := make(chan interface{})
+		ch := make(chan message)
 		go generateLog(conf, num, rate, producer, ch)
 
 		// For each message call the serializer and write to the output
-		for log := range ch {
-			b, err := serializer(log)
-			if err != nil {
-				return cli.NewExitError(err.Error(), 1)
+		if kafkaProducer != nil {
+			for log := range ch {
+				b, err := serializer(log.Value)
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
+				_, _, err = kafkaProducer.SendMessage(&sarama.ProducerMessage{
+					Topic: kafkaTopic,
+					Key:   sarama.StringEncoder(log.Key),
+					Value: sarama.StringEncoder(b),
+				})
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
 			}
-			_, err = fmt.Fprintf(output, "%s\n", b)
-			if err != nil {
-				return cli.NewExitError(err.Error(), 1)
+			fmt.Printf("[INFO] Done writing %d messages to kafka\n", c.Int("num"))
+		} else {
+			for log := range ch {
+				b, err := serializer(log.Value)
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
+				_, err = fmt.Fprintf(output, "%s\n", b)
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
 			}
 		}
 

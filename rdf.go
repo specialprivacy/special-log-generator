@@ -48,11 +48,11 @@ func getLogTTLTemplate() *template.Template {
 			return fmt.Sprintf("%s", output)
 		},
 	}
-	tmpl := "{{$logID := randomUUID}}{{$contentId := randomUUID}}" +
+	tmpl := "{{$contentId := randomUUID}}" +
 		"{{if .Process}}<http://example.com/logs/{{.Process}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#Log>;" +
 		"<http://www.w3.org/ns/prov#wasAttributedTo><http://example.com/applications/{{.Process}}>;" +
-		"<http://www.specialprivacy.eu/langs/splog#logEntry><http://example.com/logEntries/{{$logID}}>.{{end}}" +
-		"<http://example.com/logEntries/{{$logID}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#LogEntry>" +
+		"<http://www.specialprivacy.eu/langs/splog#logEntry><http://example.com/logEntries/{{.EventID}}>.{{end}}" +
+		"<http://example.com/logEntries/{{.EventID}}><http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.specialprivacy.eu/langs/splog#LogEntry>" +
 		"{{if .Timestamp}};<http://www.specialprivacy.eu/langs/splog#transactionTime>\"{{toISOTime .Timestamp}}\"^^<http://www.w3.org/2001/XMLSchema#dateTime>{{end}}" +
 		"{{if .UserID}};<http://www.specialprivacy.eu/langs/splog#dataSubject><http://www.example.com/users/{{.UserID}}>{{end}}" +
 		";<http://www.specialprivacy.eu/langs/splog#logEntryContent><http://example.com/logEntryContents/{{$contentId}}>." +

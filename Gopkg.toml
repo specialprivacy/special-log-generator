@@ -29,3 +29,7 @@
   name = "github.com/google/uuid"
   version = "0.2.0"
 
+
+[[constraint]]
+  name = "gopkg.in/Shopify/sarama.v1"
+  version = "1.17.0"
