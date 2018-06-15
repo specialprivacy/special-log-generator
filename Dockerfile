@@ -6,8 +6,9 @@ RUN go build
 
 FROM alpine
 
-CMD ['special-log-generator', 'generate', '--num', '0', '--rate', '5s']
+ENV NUM=0
+ENV RATE=5s
+CMD ["special-log-generator", "generate"]
 WORKDIR /
 
-COPY --from=builder /go/src/special-log-generator/special-log-generator ./
-
+COPY --from=builder /go/src/special-log-generator/special-log-generator /bin/

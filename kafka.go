@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"io/ioutil"
 
 	"gopkg.in/Shopify/sarama.v1"
@@ -18,7 +19,7 @@ type kafkaConfig struct {
 
 func createKafkaProducer(kafkaConfig kafkaConfig) (sarama.SyncProducer, error) {
 	if len(kafkaConfig.BrokerList) == 0 {
-		return nil, nil
+		return nil, errors.New("A list of initial brokers must be given when using the kafka output")
 	}
 
 	config := sarama.NewConfig()
