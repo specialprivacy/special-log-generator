@@ -20,7 +20,7 @@ type message struct {
 }
 
 // makeLog creates a log statement from a random selection of the values in config.
-func makeLog(config config) message {
+func makeLog(config config, _ int) message {
 	log := log{
 		Timestamp:  time.Now().UnixNano() / int64(time.Millisecond),
 		Process:    getRandomValue(config.Process),
@@ -39,8 +39,8 @@ func makeLog(config config) message {
 }
 
 // makeConsent creates a consent event from a random selection of the values in the config.
-func makeConsent(config config) message {
-	simplePolicies := make([]simplepolicy, rand.Intn(config.MaxPolicySize))
+func makeConsent(config config, maxSize int) message {
+	simplePolicies := make([]simplepolicy, rand.Intn(maxSize))
 	for i := range simplePolicies {
 		simplePolicies[i] = simplepolicy{
 			Purpose:    getRandomValue(config.Purpose),
@@ -69,18 +69,19 @@ func generateLog(
 	config config,
 	n int,
 	rate time.Duration,
-	producer func(config) message,
+	maxSize int,
+	producer func(config, int) message,
 	c chan message,
 ) {
 	if n <= 0 {
 		for {
-			payload := producer(config)
+			payload := producer(config, maxSize)
 			c <- payload
 			time.Sleep(rate)
 		}
 	} else {
 		for i := 0; i < n; i++ {
-			payload := producer(config)
+			payload := producer(config, maxSize)
 			c <- payload
 			time.Sleep(rate)
 		}
@@ -144,6 +145,12 @@ var generateCommand = cli.Command{
 			Value:  "log",
 			Usage:  "The `type` of event to be generated (log or consent)",
 			EnvVar: "TYPE",
+		},
+		cli.IntFlag{
+			Name:   "max-policy-size",
+			Value:  5,
+			Usage:  "The maximum `number` of policies to be used in a single consent (only applicable for type consent)",
+			EnvVar: "MAX_POLICY_SIZE",
 		},
 		cli.StringSliceFlag{
 			Name:   "kafka-broker-list",
@@ -231,7 +238,7 @@ var generateCommand = cli.Command{
 
 		// Parse out the type flag (log or consent)
 		eventType := c.String("type")
-		var producer func(config) message
+		var producer func(config, int) message
 		var ttlTemplate *template.Template
 		if eventType == "log" {
 			producer = makeLog
@@ -242,6 +249,9 @@ var generateCommand = cli.Command{
 		} else {
 			return cli.NewExitError(fmt.Sprintf("type should be oneOf ['log', 'consent']"), 1)
 		}
+
+		// Parse out the max-policy-size flag
+		maxSize := c.Int("max-policy-size")
 
 		// Parse out the format flag (json or ttl)
 		format := c.String("format")
@@ -256,7 +266,7 @@ var generateCommand = cli.Command{
 
 		// Create the channel and start emitting messages
 		ch := make(chan message)
-		go generateLog(conf, num, rate, producer, ch)
+		go generateLog(conf, num, rate, maxSize, producer, ch)
 
 		// For each message call the serializer and write to the output
 		if kafkaProducer != nil {

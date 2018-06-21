@@ -56,14 +56,13 @@ type policy struct {
 // It's code relies heavily on reflection, so that any changes to this struct
 // are immediately reflected in the command.
 type config struct {
-	Process       []string `json:"process,omitempty"`
-	Purpose       []string `json:"purpose,omitempty"`
-	Processing    []string `json:"processing,omitempty"`
-	Recipient     []string `json:"recipient,omitempty"`
-	Storage       []string `json:"storage,omitempty"`
-	UserID        []string `json:"userID,omitempty"`
-	Data          []string `json:"data,omitempty"`
-	MaxPolicySize int      `json:"maxPolicySize,omitempty"`
+	Process    []string `json:"process,omitempty"`
+	Purpose    []string `json:"purpose,omitempty"`
+	Processing []string `json:"processing,omitempty"`
+	Recipient  []string `json:"recipient,omitempty"`
+	Storage    []string `json:"storage,omitempty"`
+	UserID     []string `json:"userID,omitempty"`
+	Data       []string `json:"data,omitempty"`
 }
 
 func makeDefaultConfig() config {
@@ -91,14 +90,13 @@ func makeDefaultConfig() config {
 	}
 
 	return config{
-		Process:       defaultProcess,
-		Purpose:       defaultPurpose,
-		Processing:    defaultProcessing,
-		Storage:       defaultStorage,
-		Recipient:     defaultRecipient,
-		UserID:        makeUUIDList(5),
-		Data:          defaultData,
-		MaxPolicySize: 5,
+		Process:    defaultProcess,
+		Purpose:    defaultPurpose,
+		Processing: defaultProcessing,
+		Storage:    defaultStorage,
+		Recipient:  defaultRecipient,
+		UserID:     makeUUIDList(5),
+		Data:       defaultData,
 	}
 
 }

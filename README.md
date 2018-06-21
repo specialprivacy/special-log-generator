@@ -24,6 +24,7 @@ The application has the following commands:
 - `--output`: The file to which the generated events should be written. If the special value 'kafka' is used, logs will be produced on kafka. (default: `stdout`) [$OUTPUT]
 - `--format`: The serialization format used to write the events (json or ttl) (default: `json`) [$FORMAT]
 - `--type`: The type of event to be generated (log or consent) (default: `log`) [$TYPE]
+- `--max-policy-size number`: The maximum number of policies to be used in a single consent (only applicable for type consent) (default: `5`) [$MAX_POLICY_SIZE]
 - `--kafka-broker-list`: A comma separated list of brokers used to bootstrap the connection to a kafka cluster. eg: `127.0.0.1,172.10.50.4` [$KAFKA_BROKER_LIST]
 - `--kafka-topic`: The name of the topic on which logs will be produced. (default: `application-logs`) [$KAFKA_TOPIC]
 - `--kafka-cert-file`: The path to a certificate file used for client authentication to kafka. [$KAFKA_CERT_FILE]
@@ -35,9 +36,11 @@ The application has the following commands:
 The config file format is json which takes the following keys:
 - `process`: An array of strings with potential values for `process`
 - `purpose`: An array of strings with potential values for `purpose`
-- `location`: An array of strings with potential values for `location`
-- `userID`: An array of strings with potential values for `userId`
-- `attributes`: An array of strings with potential values for `attributes`
+- `processing`: An array of strings with potential values for `processing`
+- `recipient`: An array of strings with potential values for `recipient`
+- `storage`: An array of strings with potential values for `storage`
+- `userID`: An array of strings with potential values for `userID`
+- `data`: An array of strings with potential values for `data`
 
 If the config file contains unknown keys, they will be ignored.
 If the type of any of the defined keys does not match, an error with a (hopefully) useful description will be shown.
@@ -49,24 +52,30 @@ Example of a fully specified config file:
 {
   "process": ["foo", "bar"],
   "purpose": ["marketing", "delivery"],
-  "location": ["greenland", "iceland", "mordor"],
+  "processing": ["categorization", "archiving"],
+  "recipient": ["affiliates", "google"],
+  "storage": ["greenland", "iceland", "mordor"],
   "userID": ["1", "2", "3"],
-  "attributes": ["height", "gender"]
+  "data": ["height", "gender"]
 }
 ```
 
 ### Configure Options
-- `--output`: The file to which the generated configuration should be written (default: `stdout`)
-- `--processNum`: The number of Process attribute values to generate (default: `0`)
-- `--processPrefix`: The prefix string to be used for the generated Process attributes (default: `Process`)
-- `--purposeNum`: The number of Purpose attribute values to generate (default: `0`)
-- `--purposePrefix`: The prefix string to be used for the generated Purpose attributes (default: `Purpose`)
-- `--locationNum`: The number of Location attribute values to generate (default: `0`)
-- `--locationPrefix`: The prefix string to be used for the generated Location attributes (default: `Location`)
-- `--userIDNum`: The number of UserId attribute values to generate (default: `0`)
-- `--userIDPrefix`: The prefix string to be used for the generated UserId attributes (default: `UserId`)
-- `--attributesNum`: The number of Attributes attribute values to generate (default: `0`)
-- `--attributesPrefix`: The prefix string to be used for the generated Attributes attributes (default: `Attributes`)
+- `--output file, -o file`: The file to which the generated configuration should be written (default: `stdout`)
+- `--processNum number`: The number of Process attribute values to generate (default: `0`)
+- `--processPrefix string`: The prefix string to be used for the generated Process attributes (default: `Process`)
+- `--purposeNum number`: The number of Purpose attribute values to generate (default: `0`)
+- `--purposePrefix string`: The prefix string to be used for the generated Purpose attributes (default: `Purpose`)
+- `--processingNum number`: The number of Processing attribute values to generate (default: `0`)
+- `--processingPrefix string`: The prefix string to be used for the generated Processing attributes (default: `Processing`)
+- `--recipientNum number`: The number of Recipient attribute values to generate (default: `0`)
+- `--recipientPrefix string`: The prefix string to be used for the generated Recipient attributes (default: `Recipient`)
+- `--storageNum number`: The number of Storage attribute values to generate (default: `0`)
+- `--storagePrefix string`: The prefix string to be used for the generated Storage attributes (default: `Storage`)
+- `--userIDNum number`: The number of UserID attribute values to generate (default: `0`)
+- `--userIDPrefix string`: The prefix string to be used for the generated UserID attributes (default: `UserID`)
+- `--dataNum number`: The number of Data attribute values to generate (default: `0`)
+- `--dataPrefix string`: The prefix string to be used for the generated Data attributes (default: `Data`)
 
 ### Examples
 - Print 10 random logs to `stdout`
