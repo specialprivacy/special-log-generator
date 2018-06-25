@@ -217,7 +217,6 @@ var generateCommand = cli.Command{
 			var err error
 			kafkaProducer, err = createKafkaProducer(kafkaConfig{
 				BrokerList: c.StringSlice("kafka-broker-list"),
-				Version:    sarama.V1_1_0_0,
 				CertFile:   c.String("kafka-cert-file"),
 				KeyFile:    c.String("kafka-key-file"),
 				CaFile:     c.String("kafka-ca-file"),

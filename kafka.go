@@ -23,6 +23,7 @@ func createKafkaProducer(kafkaConfig kafkaConfig) (sarama.SyncProducer, error) {
 	}
 
 	config := sarama.NewConfig()
+	config.Version = sarama.V1_1_0_0
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Retry.Max = 10
 	config.Producer.Return.Successes = true
