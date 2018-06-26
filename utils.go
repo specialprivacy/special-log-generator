@@ -28,7 +28,7 @@ func getRandomValue(values []string) string {
 
 // getRandomList selects a random subset of values and returns it as an array.
 func getRandomList(values []string) []string {
-	length := rand.Intn(len(values))
+	length := rand.Intn(len(values)) + 1
 	for i := len(values) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
 		values[i], values[j] = values[j], values[i]
