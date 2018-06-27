@@ -57,7 +57,7 @@ func makeConsent(config config, maxSize int) message {
 		SimplePolicies: simplePolicies,
 	}
 	return message{
-		Key:   policy.ConsentID,
+		Key:   policy.UserID,
 		Value: policy,
 	}
 }
